@@ -1,0 +1,117 @@
+/* Hello I'm Nea , i have used arduino uno and write this code  with these pin connections: Columns D0-D13 & A0-A1, Layers A2-A5 */
+
+int columns[16] = {0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15};
+int layers[4] = {16, 17, 18, 19};
+byte cube[4][16];
+
+void setup() {
+  for(int i = 0; i < 16; i++) {
+    pinMode(columns[i], OUTPUT);
+  }
+  for(int i = 0; i < 4; i++) {
+    pinMode(layers[i], OUTPUT);
+  }
+}
+
+void clearCube() {
+  for(int i = 0; i < 4; i++) {
+    for(int j = 0; j < 16; j++) {
+      cube[i][j] = 0;
+    }
+  }
+}
+
+void drawCube(int time) {
+  unsigned long start = millis();
+  while(millis() - start < time) {
+    for(int i = 0; i < 4; i++) {
+      digitalWrite(layers[i], HIGH);
+      for(int j = 0; j < 16; j++) {
+        digitalWrite(columns[j], cube[i][j] ? LOW : HIGH);
+      }
+      delayMicroseconds(150);
+      for(int j = 0; j < 16; j++) {
+        digitalWrite(columns[j], HIGH);
+      }
+      digitalWrite(layers[i], LOW);
+    }
+  }
+}
+
+void turnOnAll() {
+  for(int i = 0; i < 4; i++) {
+    for(int j = 0; j < 16; j++) {
+      cube[i][j] = 1;
+    }
+  }
+  drawCube(1000);
+}
+
+void layerSweep() {
+  for(int i = 0; i < 4; i++) {
+    clearCube();
+    for(int j = 0; j < 16; j++) cube[i][j] = 1;
+    drawCube(250);
+  }
+  for(int i = 2; i > 0; i--) {
+    clearCube();
+    for(int j = 0; j < 16; j++) cube[i][j] = 1;
+    drawCube(250);
+  }
+}
+
+void randomFlicker() {
+  for(int k = 0; k < 40; k++) {
+    clearCube();
+    for(int r = 0; r < 10; r++) {
+      cube[random(4)][random(16)] = 1;
+    }
+    drawCube(75);
+  }
+}
+
+void rain() {
+  for(int k = 0; k < 40; k++) {
+    for(int i = 0; i < 3; i++) {
+      for(int j = 0; j < 16; j++) {
+        cube[i][j] = cube[i+1][j];
+      }
+    }
+    for(int j = 0; j < 16; j++) {
+      cube[3][j] = (random(10) > 7) ? 1 : 0;
+    }
+    drawCube(120);
+  }
+}
+
+void boxExpand() {
+  clearCube();
+  for(int i = 1; i <= 2; i++) {
+    cube[i][5] = 1; cube[i][6] = 1; 
+    cube[i][9] = 1; cube[i][10] = 1;
+  }
+  drawCube(400);
+  turnOnAll();
+  drawCube(400);
+  clearCube();
+  for(int i = 1; i <= 2; i++) {
+    cube[i][5] = 1; cube[i][6] = 1; 
+    cube[i][9] = 1; cube[i][10] = 1;
+  }
+  drawCube(400);
+}
+
+void loop() {
+  turnOnAll();
+  clearCube();
+  drawCube(500);
+  
+  layerSweep();
+  layerSweep();
+  
+  randomFlicker();
+  
+  rain();
+  
+  boxExpand();
+}
